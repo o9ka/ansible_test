@@ -6,3 +6,6 @@ ans2@192.168.201.55
 
 [file_servers]
 ans3@192.168.201.56
+
+[workstations]
+192.168.201.57

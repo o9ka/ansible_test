@@ -7,13 +7,19 @@
   - name: install updates (Ubuntu)
     tags: always
     apt:
+      upgrade: dist
       update_cache: yes
-    changed_when: false
     when: ansible_distribution == "Ubuntu"
 
 - hosts: all
   become: true
   tasks:
+
+  - name: create user Simone
+    tags: always
+    user: 
+      name: simone
+      groups: root
 
   - name: add ssh key for Simone
     tags: alwyas
@@ -21,41 +27,16 @@
       user: simone
       key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP5EzRlSrtS0LHk2PYtUk0cmPvYUIGyNQ2iRWyFBHkH8 ansible"
 
-
-- hosts: workstations
-  become: true
-  tasks:
-
-  - name: install unzip
-    package:
-      name: unzip
-  
-  - name: install terraform
-    unarchive:
-      src: https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
-      dest: /usr/local/bin
-      remote_src: yes
-      mode: 0755
-      owner: root
-      group: root 
-
-- hosts: web_servers
-  become: true
-  tasks:
-
-  - name: install apache and php packages
-    tags: apache,apache2,ubuntu
-    apt:
-      name: 
-        - apache2
-        - libapache2-mod-php
-      state: latest
-    when: ansible_distribution == "Ubuntu"
-
-  - name: copy default html file for site
-    tags: apache,apache2,httpd
+  - name: add sudoers to Simone
     copy:
-      src: default_site.html
+      src: sudoer_simone
+      dest: /etc/sudoers.d/simone
+      owner: root
+      group: root
+      mode: 0440
+
+
+lt_site.html
       dest: /var/www/html/index.html
       owner: root
       group: root
