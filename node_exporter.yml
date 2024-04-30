@@ -4,30 +4,39 @@
   become: true
   tasks:
 
-  - name: install node_exporter tar file
-    tags: ubuntu 
-    get_url:
-      url: "https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz"
-      dest: /tmp/node_exporter.tar.gz
+    - name: install node_exporter tar file 
+      get_url:
+        url: "https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz"
+        dest: /tmp/node_exporter.tar.gz
 
 
-  - name: Extract node exporter
-    tags: node_exporter,ubuntu
-    unarchive:
-      src: /tmp/node_exporter.tar.gz
-      dest: /usr/bin/
-      remote_src: true
+    - name: Extract node exporter
+      unarchive:
+        src: /tmp/node_exporter.tar.gz
+        dest: /usr/bin/
+        remote_src: true
 
-  - name: Create service file
-    template:
-      src: node_exporter.service.j2
-      dest: /etc/systemd/system/node_exporter.service
-    notify: Restart Node Exporter service
+    - name: Create service file
+      template:
+        src: node_exporter.service.j2
+        dest: /etc/systemd/system/node_exporter.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Node Exporter service
 
- 
-  - name: Start node exporter
-    tags: ubuntu
-    service:
-      name: node_exporter-1.7.0
-      state: started
-      enabled: yes
+    - name: Start Node Exporter service
+      systemd:
+        name: node_exporter
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Restart Node Exporter service
+      systemd:
+        name: node_exporter
+        state: restarted
+
+
+
+
