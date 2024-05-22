@@ -1,0 +1,32 @@
+---
+- name: Setting up windows machine with ansible
+  hosts: windows
+  gather_facts: false
+
+  tasks:
+    - name: Setup WinRM, PSRP
+      win_shell: |
+        $hostname = "{{ ansible_host }}"
+        $username = "wans1"
+        $password = td4ever1
+        $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+        $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArguementList $username, $securePassword
+        $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck
+        $session = New-PSSession -ComputerName $hostname -Credential $credential -SessionOption $sessionOption
+        Enable-PSRemoting -Force -SkipNetworkProfileCheck -Confirm:$false
+        Register-PSSessionConfiguration -Name 'Ansible' -StartupScript '' -RunAsCredential $credential -Force -Confirm:$false
+        exit
+      register: winrm_setup
+      changed_when: false
+      ignore_errors: yes
+
+    - debug:
+        var: winrm_setup
+
+
+    - name: Gathering facts
+      setup:
+
+    - name: Reset ExecutionPolicy
+      win_shell: Set-ExecutionPolicy Undefined -Scope LocalMachine -Force
+      changed_when: false

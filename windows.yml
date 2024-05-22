@@ -1,0 +1,25 @@
+---
+
+- name: Setting up windows machine with ansible
+  hosts: windows
+  gather_facts: true
+
+  pre_tasks:
+    - name: Setup WinRM. PSRP
+      community.windows.psexec:
+        hostname: '{{ hostvars[inventory_hostname]["ansible_host"] | default(inventory_hostname) }}'
+        connection_username: '{{ ansible_user }}'
+        connection_password: '{{ ansible_password }}'
+        encrypt: yes
+        executable: powershell.exe
+        arguments: '-'
+        stdin: |
+          Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
+          [Net.ServicePointMnanager]::SecurityProtocol = [NetSecurityProtocolType]::Tls12
+          $url = "https:/raw.githubusercontent.com/ansible/ansible-documentation/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"
+          $file = "$env:temp\ConfigureRemotingForAnsible.ps1"
+          (New-Object -TypeName System.Net.WebClient).DownloadFile($url, $file)
+          Invoke-Expression "$file -SkipNetworkProfileCheck"
+          exit
+      delegate_to: localhost
+      changed_when: false

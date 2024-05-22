@@ -1,0 +1,41 @@
+---
+
+- name: Install Windows Exporter on Windows Server
+  hosts: all
+  tasks:
+
+    - name: Create exporter directory
+      win_file:
+        path: C:\WindowsExporter
+        state: directory
+
+    - name: Download windows exporter
+      win_get_url:
+        url: https://github.com/prometheus-community/windows_exporter/releases/download/v0.26.0-rc.2/windows_exporter-0.26.0-amd64.msi
+        dest: C:\WindowsExporter\windows_exporter.msi
+
+    - name: Install windows exporter
+      win_package:
+        path: C:\WindowsExporter\windows_exporter.msi
+        state: present
+
+    - name: Open port 9182
+      win_firewall_rule:
+        name: "Allow Windows Exporter"
+        enable: yes
+        direction: in
+        action: allow
+        protocol: tcp
+        localport: '9182'
+
+    - name: Start Windows Exporter
+      win_service:
+        name: windows_exporter
+        start_mode: auto
+        state: started
+
+    - name: Ensure Windows exporter is started
+      win_service:
+        name: windows_exporter
+        state: started
+        start_mode: auto

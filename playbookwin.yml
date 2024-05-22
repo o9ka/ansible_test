@@ -1,0 +1,11 @@
+---
+
+- name: test commands for windows-ansible
+  hosts: windows
+  gather_facts: true
+
+  tasks:
+    - name: Simple cmd.exe test
+      community.windows.psexec:
+        executable: cmd.exe
+        arguemtns: /c echo Hello World
